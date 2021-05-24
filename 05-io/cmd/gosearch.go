@@ -55,6 +55,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	sort.Slice(docs, func(i, j int) bool { return docs[i].ID <= docs[j].ID })
 	gs.index.Create(docs)
 
 	var keyword = flag.String("s", "", "keyword")

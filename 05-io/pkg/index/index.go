@@ -1,7 +1,6 @@
 package index
 
 import (
-	"sort"
 	"strings"
 	"thinknetica/05-io/pkg/crawler"
 )
@@ -32,5 +31,4 @@ func (r *Index) Create(docs []crawler.Document) {
 	for _, elem := range docs {
 		r.Add(elem.Title, elem.ID)
 	}
-	sort.Slice(docs, func(i, j int) bool { return docs[i].ID <= docs[j].ID })
 }
