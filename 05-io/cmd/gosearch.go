@@ -21,33 +21,38 @@ type gosearch struct {
 
 func main() {
 	storage := "./storage.json"
+	urls := []string{"https://golang.org/", "https://go.dev/"}
 	gs := gosearch{}
 	gs.scanner = spider.New()
 	docs := []crawler.Document{}
-	_, err := os.Stat(storage)
-	if os.IsNotExist(err) {
-		urls := []string{"https://golang.org/", "https://go.dev/"}
+	f, err := os.Open(storage)
+	if err != nil {
+		f, err = os.Create(storage)
+		if err != nil {
+			log.Fatal(err)
+		}
 		chRes, _ := gs.scanner.BatchScan(urls, 2, 2)
 		for elem := range chRes {
 			elem.ID = len(docs) + 1
 			docs = append(docs, elem)
+			err = add(f, elem)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-		err := write(storage, docs)
+	} else {
+		docs, err = scan(f)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	if err == nil || os.IsExist(err) {
-		docs, err = scan(storage)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	defer f.Close()
 	sort.Slice(docs, func(i, j int) bool { return docs[i].ID <= docs[j].ID })
 	gs.index.Create(docs)
 
 	var keyword = flag.String("s", "", "keyword")
 	flag.Parse()
+	*keyword = "why"
 	if *keyword != "" {
 		res := gs.index.Search(*keyword)
 		for _, id := range res {
@@ -59,7 +64,7 @@ func main() {
 	}
 }
 
-func put(w io.Writer, elem crawler.Document) error {
+func add(w io.Writer, elem crawler.Document) error {
 	b, err := json.Marshal(elem)
 	if err != nil {
 		return err
@@ -68,7 +73,7 @@ func put(w io.Writer, elem crawler.Document) error {
 	return err
 }
 
-func get(r io.Reader) ([]crawler.Document, error) {
+func scan(r io.Reader) ([]crawler.Document, error) {
 	docs := []crawler.Document{}
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
@@ -80,28 +85,4 @@ func get(r io.Reader) ([]crawler.Document, error) {
 		docs = append(docs, res)
 	}
 	return docs, scanner.Err()
-}
-
-func scan(storage string) ([]crawler.Document, error) {
-	f, err := os.Open(storage)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	return get(f)
-}
-
-func write(storage string, docs []crawler.Document) error {
-	f, err := os.Create(storage)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	for _, elem := range docs {
-		err = put(f, elem)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
