@@ -20,37 +20,25 @@ type gosearch struct {
 }
 
 func main() {
-	file := ".\\storage.json"
+	storage := "./storage.json"
 	gs := gosearch{}
 	gs.scanner = spider.New()
 	docs := []crawler.Document{}
-	if _, err := os.Stat(file); os.IsNotExist(err) {
-		f, err := os.Create(file)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		defer f.Close()
+	_, err := os.Stat(storage)
+	if os.IsNotExist(err) {
 		urls := []string{"https://golang.org/", "https://go.dev/"}
 		chRes, _ := gs.scanner.BatchScan(urls, 2, 2)
 		for elem := range chRes {
 			elem.ID = len(docs) + 1
 			docs = append(docs, elem)
-			b, err := json.Marshal(elem)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = store(f, append(b, '\n'))
-			if err != nil {
-				log.Fatal(err)
-			}
 		}
-	} else {
-		f, err := os.Open(file)
+		err := write(storage, docs)
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer f.Close()
-		docs, err = get(f)
+	}
+	if err == nil || os.IsExist(err) {
+		docs, err = scan(storage)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,8 +59,12 @@ func main() {
 	}
 }
 
-func store(w io.Writer, b []byte) error {
-	_, err := w.Write(b)
+func put(w io.Writer, elem crawler.Document) error {
+	b, err := json.Marshal(elem)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(append(b, '\n'))
 	return err
 }
 
@@ -87,5 +79,29 @@ func get(r io.Reader) ([]crawler.Document, error) {
 		}
 		docs = append(docs, res)
 	}
-	return docs, nil
+	return docs, scanner.Err()
+}
+
+func scan(storage string) ([]crawler.Document, error) {
+	f, err := os.Open(storage)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return get(f)
+}
+
+func write(storage string, docs []crawler.Document) error {
+	f, err := os.Create(storage)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	for _, elem := range docs {
+		err = put(f, elem)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
