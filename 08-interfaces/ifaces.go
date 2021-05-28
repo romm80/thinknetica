@@ -26,11 +26,11 @@ func (c Customer) Age() int {
 	return c.age
 }
 
-type iface interface {
+type Person interface {
 	Age() int
 }
 
-func Older(args ...iface) int {
+func Eldest(args ...Person) int {
 	max := 0
 	for _, v := range args {
 		if v.Age() > max {
@@ -40,7 +40,7 @@ func Older(args ...iface) int {
 	return max
 }
 
-func OlderObj(args ...interface{}) interface{} {
+func EldestObj(args ...interface{}) interface{} {
 	max := 0
 	var res interface{}
 	for _, v := range args {

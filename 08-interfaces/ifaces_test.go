@@ -7,33 +7,44 @@ import (
 	"testing"
 )
 
-func TestOlder(t *testing.T) {
+func TestEldest(t *testing.T) {
 	c := Customer{}
 	c.SetAge(20)
 	e := Employee{}
 	e.SetAge(30)
 	type args struct {
-		args []iface
+		args []Person
 	}
 	tests := []struct {
 		name string
 		args args
 		want int
 	}{
-		{"#1", args{[]iface{c}}, 20},
-		{"#2", args{[]iface{e}}, 30},
-		{"#3", args{[]iface{e, c}}, 30},
+		{
+			name: "#1",
+			args: args{[]Person{c}},
+			want: 20},
+		{
+			name: "#2",
+			args: args{[]Person{e}},
+			want: 30,
+		},
+		{
+			name: "#3",
+			args: args{[]Person{e, c}},
+			want: 30,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Older(tt.args.args...); got != tt.want {
-				t.Errorf("Older() = %v, want %v", got, tt.want)
+			if got := Eldest(tt.args.args...); got != tt.want {
+				t.Errorf("Eldest() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestOlderObj(t *testing.T) {
+func TestEldestObj(t *testing.T) {
 	c := Customer{}
 	c.SetAge(20)
 	e := Employee{}
@@ -50,14 +61,26 @@ func TestOlderObj(t *testing.T) {
 		args args
 		want interface{}
 	}{
-		{"#1", args{a1}, c},
-		{"#2", args{a2}, e},
-		{"#3", args{a3}, e},
+		{
+			name: "#1",
+			args: args{a1},
+			want: c,
+		},
+		{
+			name: "#2",
+			args: args{a2},
+			want: e,
+		},
+		{
+			name: "#3",
+			args: args{a3},
+			want: e,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := OlderObj(tt.args.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("OlderObj() = %v, want %v", got, tt.want)
+			if got := EldestObj(tt.args.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("EldestObj() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -76,9 +99,21 @@ func Test_printStr(t *testing.T) {
 		args  args
 		wantW string
 	}{
-		{"#1", args{a1}, "qweqwe"},
-		{"#2", args{a2}, ""},
-		{"#3", args{a3}, "asdqwe123123"},
+		{
+			name:  "#1",
+			args:  args{a1},
+			wantW: "qweqwe",
+		},
+		{
+			name:  "#2",
+			args:  args{a2},
+			wantW: "",
+		},
+		{
+			name:  "#3",
+			args:  args{a3},
+			wantW: "asdqwe123123",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
