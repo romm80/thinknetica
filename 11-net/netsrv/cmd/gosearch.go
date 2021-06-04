@@ -9,6 +9,7 @@ import (
 	"thinknetica/11-net/netsrv/pkg/crawler"
 	"thinknetica/11-net/netsrv/pkg/crawler/spider"
 	"thinknetica/11-net/netsrv/pkg/index"
+	"time"
 )
 
 type gosearch struct {
@@ -18,18 +19,8 @@ type gosearch struct {
 }
 
 func main() {
-	urls := []string{"https://golang.org/", "https://go.dev/"}
 	gs := gosearch{}
-	gs.scanner = spider.New()
-	gs.docs = []crawler.Document{}
-
-	chRes, _ := gs.scanner.BatchScan(urls, 2, 2)
-	for elem := range chRes {
-		elem.ID = len(gs.docs) + 1
-		gs.docs = append(gs.docs, elem)
-	}
-	sort.Slice(gs.docs, func(i, j int) bool { return gs.docs[i].ID <= gs.docs[j].ID })
-	gs.index.Create(gs.docs)
+	gs.Init()
 
 	listener, err := net.Listen("tcp4", ":8000")
 	if err != nil {
@@ -44,8 +35,22 @@ func main() {
 	}
 }
 
+func (g *gosearch) Init() {
+	g.scanner = spider.New()
+	g.docs = []crawler.Document{}
+	urls := []string{"https://golang.org/", "https://go.dev/"}
+
+	chRes, _ := g.scanner.BatchScan(urls, 2, 2)
+	for elem := range chRes {
+		elem.ID = len(g.docs) + 1
+		g.docs = append(g.docs, elem)
+	}
+	sort.Slice(g.docs, func(i, j int) bool { return g.docs[i].ID <= g.docs[j].ID })
+	g.index.Create(g.docs)
+}
+
 func handler(conn net.Conn, gs gosearch) {
-	defer conn.Close()
+	conn.SetDeadline(time.Now().Add(time.Second * 10))
 	r := bufio.NewReader(conn)
 	for {
 		msg, _, err := r.ReadLine()
@@ -66,5 +71,6 @@ func handler(conn net.Conn, gs gosearch) {
 		if err != nil {
 			return
 		}
+		conn.SetDeadline(time.Now().Add(time.Second * 10))
 	}
 }
