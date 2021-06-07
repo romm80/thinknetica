@@ -1,7 +1,7 @@
 package membot
 
 import (
-	"thinknetica/11-net/netsrv/pkg/crawler"
+	"thinknetica/11-net/pkg/crawler"
 )
 
 // Service - имитация служба поискового робота.

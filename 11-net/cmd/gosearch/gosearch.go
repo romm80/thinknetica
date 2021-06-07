@@ -6,9 +6,9 @@ import (
 	"log"
 	"net"
 	"sort"
-	"thinknetica/11-net/netsrv/pkg/crawler"
-	"thinknetica/11-net/netsrv/pkg/crawler/spider"
-	"thinknetica/11-net/netsrv/pkg/index"
+	"thinknetica/11-net/pkg/crawler"
+	"thinknetica/11-net/pkg/crawler/spider"
+	"thinknetica/11-net/pkg/index"
 	"time"
 )
 

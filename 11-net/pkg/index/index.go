@@ -2,7 +2,7 @@ package index
 
 import (
 	"strings"
-	"thinknetica/11-net/netsrv/pkg/crawler"
+	"thinknetica/11-net/pkg/crawler"
 )
 
 type Index struct {

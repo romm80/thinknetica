@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/net/html"
 
-	"thinknetica/11-net/netsrv/pkg/crawler"
+	"thinknetica/11-net/pkg/crawler"
 )
 
 // Service - служба поискового робота.
